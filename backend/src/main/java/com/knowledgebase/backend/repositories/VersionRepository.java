@@ -5,5 +5,6 @@ import org.springframework.data.mongodb.repository.MongoRepository;
 import java.util.List;
 
 public interface VersionRepository extends MongoRepository<Version, String> {
+	void deleteByDocumentId(String documentId);
     List<Version> findByDocumentIdOrderByVersionNumberDesc(String documentId);
 }

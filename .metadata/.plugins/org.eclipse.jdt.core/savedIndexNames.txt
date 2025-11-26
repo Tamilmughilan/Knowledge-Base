@@ -72,7 +72,6 @@ INDEX VERSION 1.134+/Users/tamilmughilane/College/Projects/Knowledge Base/.metad
 2800101105.index
 1446280788.index
 803549174.index
-1476245916.index
 1891603783.index
 2064355545.index
 760695025.index

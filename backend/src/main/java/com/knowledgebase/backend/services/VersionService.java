@@ -38,4 +38,8 @@ public class VersionService {
     public List<Version> getVersionsByDocumentId(String documentId) {
         return versionRepository.findByDocumentIdOrderByVersionNumberDesc(documentId);
     }
+
+    public void deleteVersion(String versionId) {
+        versionRepository.deleteById(versionId);
+    }
 }

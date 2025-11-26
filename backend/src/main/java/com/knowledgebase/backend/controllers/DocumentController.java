@@ -1,6 +1,7 @@
 package com.knowledgebase.backend.controllers;
 
 import com.knowledgebase.backend.models.Doc;
+import com.knowledgebase.backend.models.Version;
 import com.knowledgebase.backend.repositories.DocumentRepository;
 import com.knowledgebase.backend.services.VersionService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,10 +13,12 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 import java.io.File;
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -37,6 +40,7 @@ public class DocumentController {
     public List<Doc> getAll() { 
         return repo.findAll(); 
     }
+    
     
     @GetMapping("/{id}")
     public Optional<Doc> getById(@PathVariable String id) { 
@@ -109,6 +113,36 @@ public class DocumentController {
             @RequestParam("uploadedBy") String uploadedBy,
             @RequestParam(value = "tags", required = false) String tags) {
         try {
+            // ADD THIS VALIDATION BLOCK
+            // 1. File type validation
+            String contentType = file.getContentType();
+            List<String> allowedTypes = Arrays.asList(
+                "application/pdf",
+                "application/msword",
+                "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                "text/plain"
+            );
+            
+            if (!allowedTypes.contains(contentType)) {
+                return ResponseEntity.badRequest()
+                    .body("Invalid file type. Only PDF, DOC, DOCX, and TXT files are allowed.");
+            }
+            
+            // 2. File size validation (50MB limit)
+            long maxSize = 50 * 1024 * 1024; // 50MB in bytes
+            if (file.getSize() > maxSize) {
+                return ResponseEntity.badRequest()
+                    .body("File size exceeds maximum limit of 50MB.");
+            }
+            
+            // 3. File name validation (prevent path traversal attacks)
+            String originalFilename = file.getOriginalFilename();
+            if (originalFilename == null || originalFilename.contains("..") || 
+                originalFilename.contains("/") || originalFilename.contains("\\")) {
+                return ResponseEntity.badRequest()
+                    .body("Invalid filename.");
+            }
+            
             
             File uploadDir = new File(UPLOAD_DIR);
             if (!uploadDir.exists()) {
@@ -344,7 +378,50 @@ public class DocumentController {
     }
     
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable String id) { 
-        repo.deleteById(id); 
+    public ResponseEntity<?> delete(@PathVariable String id) {
+        try {
+            Optional<Doc> docOpt = repo.findById(id);
+            if (!docOpt.isPresent()) {
+                return ResponseEntity.notFound().build();
+            }
+            
+            Doc doc = docOpt.get();
+            
+            // 1. Delete main file if it exists
+            String content = doc.getContent();
+            if (content != null && content.startsWith("File: ")) {
+                String filename = content.substring(6);
+                Path mainFilePath = Paths.get(UPLOAD_DIR + filename);
+                try {
+                    Files.deleteIfExists(mainFilePath);
+                } catch (IOException e) {
+                    // Log but don't fail - file might already be gone
+                    System.err.println("Could not delete main file: " + e.getMessage());
+                }
+            }
+            
+            // 2. Delete all version files
+            List<Version> versions = versionService.getVersionsByDocumentId(id);
+            for (Version version : versions) {
+                if (version.getFilePath() != null) {
+                    try {
+                        Files.deleteIfExists(Paths.get(version.getFilePath()));
+                    } catch (IOException e) {
+                        System.err.println("Could not delete version file: " + e.getMessage());
+                    }
+                }
+            }
+            
+            // 3. Delete version records from database
+            versions.forEach(v -> versionService.deleteVersion(v.getId()));
+            
+            // 4. Finally delete the document
+            repo.deleteById(id);
+            
+            return ResponseEntity.ok("Document and all associated files deleted successfully");
+        } catch (Exception e) {
+            return ResponseEntity.status(500)
+                .body("Error deleting document: " + e.getMessage());
+        }
     }
 }
