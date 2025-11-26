@@ -1,0 +1,5 @@
+package com.knowledgebase.backend.models;
+
+public class User {
+
+}

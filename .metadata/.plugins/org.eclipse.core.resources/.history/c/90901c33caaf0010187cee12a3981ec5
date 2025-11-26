@@ -1,0 +1,5 @@
+package com.knowledgebase.backend.controllers;
+
+public class VersionController {
+
+}

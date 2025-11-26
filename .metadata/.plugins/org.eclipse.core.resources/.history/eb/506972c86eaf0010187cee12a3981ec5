@@ -1,0 +1,34 @@
+package com.knowledgebase.backend.controllers;
+
+import com.knowledgebase.backend.models.Doc;
+import com.knowledgebase.backend.repositories.DocumentRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.web.bind.annotation.*;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/documents")
+@CrossOrigin(origins = "http://localhost:3000")
+public class DocumentController {
+    @Autowired
+    private DocumentRepository repo;
+
+    @GetMapping
+    public List<Document> getAll() { return repo.findAll(); }
+
+    @GetMapping("/{id}")
+    public Optional<Document> getById(@PathVariable String id) { return repo.findById(id); }
+
+    @PostMapping
+    public Document create(@RequestBody Document doc) { return repo.save(doc); }
+
+    @PutMapping("/{id}")
+    public Document update(@PathVariable String id, @RequestBody Document doc) {
+        doc.setId(id);
+        return repo.save(doc);
+    }
+
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable String id) { repo.deleteById(id); }
+}

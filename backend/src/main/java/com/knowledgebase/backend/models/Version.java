@@ -1,0 +1,52 @@
+package com.knowledgebase.backend.models;
+
+import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.mapping.Document;
+import java.time.LocalDateTime;
+
+@Document(collection = "versions")
+public class Version {
+    @Id
+    private String id;
+    private String documentId;
+    private int versionNumber;
+    private String title;
+    private String content;
+    private String category;
+    private String filePath;
+    private String modifiedBy;
+    private LocalDateTime createdAt;
+    
+    //constructors
+    public Version() {
+        this.createdAt = LocalDateTime.now();
+    }
+    
+    //getters and setters
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    
+    public String getDocumentId() { return documentId; }
+    public void setDocumentId(String documentId) { this.documentId = documentId; }
+    
+    public int getVersionNumber() { return versionNumber; }
+    public void setVersionNumber(int versionNumber) { this.versionNumber = versionNumber; }
+    
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    
+    public String getContent() { return content; }
+    public void setContent(String content) { this.content = content; }
+    
+    public String getCategory() { return category; }
+    public void setCategory(String category) { this.category = category; }
+    
+    public String getFilePath() { return filePath; }
+    public void setFilePath(String filePath) { this.filePath = filePath; }
+    
+    public String getModifiedBy() { return modifiedBy; }
+    public void setModifiedBy(String modifiedBy) { this.modifiedBy = modifiedBy; }
+    
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
+}

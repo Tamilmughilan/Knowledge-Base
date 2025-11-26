@@ -1,0 +1,130 @@
+package com.knowledgebase.backend.controllers;
+
+import com.knowledgebase.backend.models.Doc;
+import com.knowledgebase.backend.repositories.DocumentRepository;
+import com.knowledgebase.backend.services.VersionService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.time.LocalDateTime;
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("/api/documents")
+@CrossOrigin(origins = "http://localhost:3000")
+public class DocumentController {
+    
+    @Autowired
+    private DocumentRepository repo;
+    
+    @Autowired
+    private VersionService versionService;
+    
+    private static final String UPLOAD_DIR = "uploads/";
+    
+    @GetMapping
+    public List<Doc> getAll() { 
+        return repo.findAll(); 
+    }
+    
+    @GetMapping("/{id}")
+    public Optional<Doc> getById(@PathVariable String id) { 
+        return repo.findById(id); 
+    }
+    
+    @GetMapping("/search")
+    public List<Doc> search(@RequestParam String keyword) {
+        return repo.searchDocuments(keyword);
+    }
+    
+    @GetMapping("/category/{category}")
+    public List<Doc> getByCategory(@PathVariable String category) {
+        return repo.findByCategory(category);
+    }
+    
+    @GetMapping("/tag/{tag}")
+    public List<Doc> getByTag(@PathVariable String tag) {
+        return repo.findByTagsContaining(tag);
+    }
+    
+    @PostMapping
+    public Doc create(@RequestBody Doc doc) {
+        doc.setCreatedAt(LocalDateTime.now());
+        doc.setUpdatedAt(LocalDateTime.now());
+        doc.setCurrentVersion(1);
+        Doc savedDoc = repo.save(doc);
+        
+        // Create first version
+        versionService.createVersion(savedDoc, doc.getUploadedBy());
+        return savedDoc;
+    }
+    
+    @PostMapping("/upload")
+    public ResponseEntity<?> uploadFile(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("title") String title,
+            @RequestParam("category") String category,
+            @RequestParam("uploadedBy") String uploadedBy,
+            @RequestParam(value = "tags", required = false) String tags) {
+        try {
+            // Create upload directory if it doesn't exist
+            File uploadDir = new File(UPLOAD_DIR);
+            if (!uploadDir.exists()) {
+                uploadDir.mkdirs();
+            }
+            
+            // Save file
+            String fileName = System.currentTimeMillis() + "_" + file.getOriginalFilename();
+            Path filePath = Paths.get(UPLOAD_DIR + fileName);
+            Files.write(filePath, file.getBytes());
+            
+            // Create document
+            Doc doc = new Doc();
+            doc.setTitle(title);
+            doc.setContent("File: " + fileName);
+            doc.setCategory(category);
+            doc.setUploadedBy(uploadedBy);
+            
+            if (tags != null && !tags.isEmpty()) {
+                doc.setTags(List.of(tags.split(",")));
+            }
+            
+            Doc savedDoc = repo.save(doc);
+            versionService.createVersion(savedDoc, uploadedBy);
+            
+            return ResponseEntity.ok(savedDoc);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body("Upload failed: " + e.getMessage());
+        }
+    }
+    
+    @PutMapping("/{id}")
+    public Doc update(@PathVariable String id, @RequestBody Doc doc) {
+        Optional<Doc> existing = repo.findById(id);
+        if (existing.isPresent()) {
+            Doc existingDoc = existing.get();
+            
+            // Save current state as version before updating
+            versionService.createVersion(existingDoc, doc.getUploadedBy());
+            
+            // Update document
+            doc.setId(id);
+            doc.setCreatedAt(existingDoc.getCreatedAt());
+            doc.setUpdatedAt(LocalDateTime.now());
+            doc.setCurrentVersion(existingDoc.getCurrentVersion() + 1);
+            return repo.save(doc);
+        }
+        return null;
+    }
+    
+    @DeleteMapping("/{id}")
+    public void delete(@PathVariable String id) { 
+        repo.deleteById(id); 
+    }
+}

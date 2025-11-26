@@ -1,0 +1,35 @@
+package com.knowledgebase.backend.repositories;
+
+import com.knowledgebase.backend.models.Doc;
+import org.springframework.data.mongodb.repository.MongoRepository;
+import org.springframework.data.mongodb.repository.Query;
+import java.util.List;
+
+public interface DocumentRepository extends MongoRepository<Doc, String> {
+    List<Doc> findByCategory(String category);
+    List<Doc> findByTagsContaining(String tag);
+    
+    @Query("{'$or': [" +
+           "{'title': {$regex: ?0, $options: 'i'}}, " +
+           "{'content': {$regex: ?0, $options: 'i'}}, " +
+           "{'category': {$regex: ?0, $options: 'i'}}, " +
+           "{'tags': {$regex: ?0, $options: 'i'}}" +
+           "]}")
+    List<Doc> searchDocuments(String keyword);
+    
+    //Search within specific category
+    @Query("{'category': ?1, '$or': [" +
+           "{'title': {$regex: ?0, $options: 'i'}}, " +
+           "{'content': {$regex: ?0, $options: 'i'}}, " +
+           "{'tags': {$regex: ?0, $options: 'i'}}" +
+           "]}")
+    List<Doc> searchByKeywordAndCategory(String keyword, String category);
+    
+    //Search within specific tag
+    @Query("{'tags': {$regex: ?1, $options: 'i'}, '$or': [" +
+           "{'title': {$regex: ?0, $options: 'i'}}, " +
+           "{'content': {$regex: ?0, $options: 'i'}}, " +
+           "{'category': {$regex: ?0, $options: 'i'}}" +
+           "]}")
+    List<Doc> searchByKeywordAndTag(String keyword, String tag);
+}

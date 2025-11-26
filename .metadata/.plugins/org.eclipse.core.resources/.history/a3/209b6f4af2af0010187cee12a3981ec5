@@ -1,0 +1,48 @@
+package com.knowledgebase.backend.services;
+
+import com.knowledgebase.backend.models.User;
+import com.knowledgebase.backend.repositories.UserRepository;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.stereotype.Service;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+
+@Service
+public class AuthService {
+    @Autowired
+    private UserRepository userRepository;
+    
+    private BCryptPasswordEncoder passwordEncoder = new BCryptPasswordEncoder();
+    
+    public User register(String username, String password, Set<String> roles) {
+        if (userRepository.existsByUsername(username)) {
+            throw new RuntimeException("Username already exists");
+        }
+        
+        // Hash password
+        String hashedPassword = passwordEncoder.encode(password);
+        User user = new User(username, hashedPassword, roles);
+        return userRepository.save(user);
+    }
+    
+    public Optional<User> login(String username, String password) {
+        Optional<User> user = userRepository.findByUsername(username);
+        if (user.isPresent() && passwordEncoder.matches(password, user.get().getPassword())) {
+            return user;
+        }
+        return Optional.empty();
+    }
+    
+    // Update default admin with hashed password
+    public User createDefaultAdmin() {
+        if (!userRepository.existsByUsername("admin")) {
+            Set<String> roles = new HashSet<>();
+            roles.add("ADMIN");
+            return register("admin", "admin123", roles);
+        }
+        return null;
+    }
+}

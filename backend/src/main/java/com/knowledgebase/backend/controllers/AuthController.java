@@ -1,0 +1,50 @@
+package com.knowledgebase.backend.controllers;
+
+import com.knowledgebase.backend.dto.AuthResponse;
+import com.knowledgebase.backend.dto.LoginRequest;
+import com.knowledgebase.backend.models.User;
+import com.knowledgebase.backend.services.AuthService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+import java.util.HashSet;
+import java.util.Optional;
+import java.util.Set;
+
+@RestController
+@RequestMapping("/api/auth")
+@CrossOrigin(origins = "http://localhost:3000")
+public class AuthController {
+    
+    @Autowired
+    private AuthService authService;
+    
+    @PostMapping("/register")
+    public ResponseEntity<?> register(@RequestBody User user) {
+        try {
+            if (user.getRoles() == null || user.getRoles().isEmpty()) {
+                Set<String> roles = new HashSet<>();
+                roles.add("EMPLOYEE");
+                user.setRoles(roles);
+            }
+            User newUser = authService.register(user.getUsername(), user.getPassword(), user.getRoles());
+            return ResponseEntity.ok(new AuthResponse(newUser.getId(), newUser.getUsername(), 
+                                                     newUser.getRoles(), "Registration successful"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+    
+    @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody LoginRequest request) {
+        Optional<User> user = authService.login(request.getUsername(), request.getPassword());
+        if (user.isPresent()) {
+            User u = user.get();
+            return ResponseEntity.ok(new AuthResponse(u.getId(), u.getUsername(), 
+                                                     u.getRoles(), "Login successful"));
+        }
+        return ResponseEntity.status(401).body("Invalid credentials");
+    }
+    
+    
+}

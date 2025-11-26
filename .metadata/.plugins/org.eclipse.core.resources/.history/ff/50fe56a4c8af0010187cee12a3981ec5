@@ -1,0 +1,5 @@
+package com.knowledgebase.backend.repositories;
+
+public class VersionRepository {
+
+}

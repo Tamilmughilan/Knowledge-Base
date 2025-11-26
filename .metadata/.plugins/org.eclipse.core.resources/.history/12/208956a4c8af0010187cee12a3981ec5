@@ -1,0 +1,6 @@
+package com.knowledgebase.backend.repositories;
+
+import com.knowledgebase.backend.models.Doc;
+import org.springframework.data.mongodb.repository.MongoRepository;
+
+public interface DocumentRepository extends MongoRepository<Doc, String> {}

@@ -1,0 +1,8 @@
+1761153651332	Move 'models' to 'backend'
+1761153684056	Move 'repositories' to 'models'
+1761153690437	Move 'repositories' to 'backend'
+1761153788593	Move 'config' to 'backend'
+1761153791553	Move 'controllers' to 'backend'
+1761153794504	Move 'services' to 'backend'
+1761154469922	Rename resource 'Document.java'
+1761193511748	Move 'dto' to 'backend'
