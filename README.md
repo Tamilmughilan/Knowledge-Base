@@ -7,6 +7,8 @@ Knowledge Base Management System
 ### Introduction
 
 The Knowledge Base Management System is a full-stack web application designed for enterprise document management and knowledge sharing. It provides a centralized platform where organizations can store, organize, search, and maintain corporate documents such as policies, procedures, guidelines, and reference materials.
+![Knowledge Base Screenshot](https://github.com/user-attachments/assets/a57111da-770a-4105-8c67-fe9db83aa740)
+
 
 ### Problem Statement
 
@@ -150,7 +152,7 @@ This application solves these challenges by providing:
 
 ### Development Tools
 
-*   Node.js and npm
+*   npm
 
 *   Git
 
