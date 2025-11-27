@@ -1,7 +1,7 @@
-Knowledge Base Management System
+Knowledge Base
 ================================
 
-🎯 Project Overview
+Project Overview
 -------------------
 
 ### Introduction
@@ -42,10 +42,10 @@ This application solves these challenges by providing:
 *   **Audit Trail**: Complete tracking of who created/modified what and when
     
 
-✨ Key Features
+Features
 --------------
 
-### 🔐 Authentication & Authorization
+###  Authentication & Authorization
 
 *   User registration and login system
     
@@ -56,7 +56,7 @@ This application solves these challenges by providing:
 *   Three user roles: Employee (view), Contributor (edit), Admin (full access)
     
 
-### 📄 Document Management
+###  Document Management
 
 *   Create text documents or upload files (PDF, DOC, DOCX, TXT)
     
@@ -71,7 +71,7 @@ This application solves these challenges by providing:
 *   View document metadata (author, dates, version)
     
 
-### 🔍 Advanced Search
+###  Advanced Search
 
 *   Multi-field keyword search (title, content, category, tags)
     
@@ -84,7 +84,7 @@ This application solves these challenges by providing:
 *   Case-insensitive regex matching
     
 
-### 📜 Version Control
+###  Version Control
 
 *   Automatic snapshot creation before updates
     
@@ -97,7 +97,7 @@ This application solves these challenges by providing:
 *   Track who made changes and when
     
 
-### 📥 File Operations
+###  File Operations
 
 *   Upload files with validation (type, size, security)
     
@@ -110,7 +110,7 @@ This application solves these challenges by providing:
 *   Secure file access with path traversal prevention
     
 
-### 👥 User Management (Admin Only)
+###  User Management (Admin Only)
 
 *   View all registered users
     
